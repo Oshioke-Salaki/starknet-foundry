@@ -1,0 +1,5 @@
+[package]
+name = "snforge-scarb-plugin"
+version = "0.1.0"
+
+[cairo-plugin]
