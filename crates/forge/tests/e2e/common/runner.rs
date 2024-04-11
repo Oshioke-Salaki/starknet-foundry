@@ -3,12 +3,15 @@ use assert_fs::TempDir;
 use camino::Utf8PathBuf;
 use indoc::formatdoc;
 use shared::command::CommandExt;
+use shared::test_utils::node_url::node_url_with_version;
 use snapbox::cmd::{cargo_bin, Command as SnapboxCommand};
+use std::path::Path;
 use std::process::Command;
 use std::str::FromStr;
 use std::{env, fs};
 use test_utils::tempdir_with_tool_versions;
 use toml_edit::{value, DocumentMut};
+use walkdir::WalkDir;
 
 pub(crate) fn runner(temp_dir: &TempDir) -> SnapboxCommand {
     SnapboxCommand::new(cargo_bin!("snforge"))
@@ -54,6 +57,33 @@ pub(crate) fn setup_package_with_file_patterns(
 
 pub(crate) fn setup_package(package_name: &str) -> TempDir {
     setup_package_with_file_patterns(package_name, BASE_FILE_PATTERNS)
+}
+
+pub(crate) fn setup_package_with_rpc_url_placeholders(
+    package_name: &str,
+    file_patterns: &[&str],
+) -> TempDir {
+    let temp_dir = setup_package_with_file_patterns(package_name, file_patterns);
+    replace_rpc_url_placeholders(temp_dir.path());
+    temp_dir
+}
+
+fn replace_rpc_url_placeholders(dir_path: &Path) {
+    let url = node_url_with_version().unwrap();
+    let temp_dir_files = WalkDir::new(dir_path);
+    for entry in temp_dir_files {
+        let entry = entry.unwrap();
+
+        let path = entry.path();
+
+        if path.is_file() {
+            let content = fs::read_to_string(path).unwrap();
+
+            let modified_content = content.replace("{{ RPC_URL }}", url.as_str());
+
+            fs::write(path, modified_content).unwrap();
+        }
+    }
 }
 
 pub(crate) fn setup_hello_workspace() -> TempDir {

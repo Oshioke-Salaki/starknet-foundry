@@ -13,6 +13,14 @@ jobs:
     name: Test Forge / Unit and Integration Tests
     runs-on: ubuntu-latest
     steps:
+      - name: Set NODE_URL for foundry-rs/starknet-foundry
+        if: ${{ github.event.pull_request.head.repo.full_name == 'foundry-rs/starknet-foundry' }}
+        run: echo "NODE_URL=$(echo ${{ secrets.NODE_URL }}:7070)" >> $GITHUB_ENV
+
+      - name: Set NODE_URL for forks
+        if: ${{ github.event.pull_request.head.repo.full_name != 'foundry-rs/starknet-foundry' }}
+        run: echo "NODE_URL=$(echo ${{ secrets.NODE_URL }})" >> $GITHUB_ENV
+      
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@23bce251a8cd2ffc3c1075eaa2367cf899916d84
@@ -41,6 +49,14 @@ jobs:
       - name: Extract repo name and owner on pull request
         if: github.event_name == 'pull_request'
         run: echo "REPO_NAME=$(echo ${{ github.event.pull_request.head.repo.full_name }}.git)" >> $GITHUB_ENV
+
+      - name: Set NODE_URL for foundry-rs/starknet-foundry
+        if: ${{ github.event.pull_request.head.repo.full_name == 'foundry-rs/starknet-foundry' }}
+        run: echo "NODE_URL=$(echo ${{ secrets.NODE_URL }}:7070)" >> $GITHUB_ENV
+
+      - name: Set NODE_URL for forks
+        if: ${{ github.event.pull_request.head.repo.full_name != 'foundry-rs/starknet-foundry' }}
+        run: echo "NODE_URL=$(echo ${{ secrets.NODE_URL }})" >> $GITHUB_ENV
 
       - name: Print repo name
         run: echo 'The repo name is' $REPO_NAME
@@ -72,6 +88,14 @@ jobs:
     name: Test Cheatnet
     runs-on: ubuntu-latest
     steps:
+      - name: Set NODE_URL for foundry-rs/starknet-foundry
+        if: ${{ github.event.pull_request.head.repo.full_name == 'foundry-rs/starknet-foundry' }}
+        run: echo "NODE_URL=$(echo ${{ secrets.NODE_URL }}:7070)" >> $GITHUB_ENV
+
+      - name: Set NODE_URL for forks
+        if: ${{ github.event.pull_request.head.repo.full_name != 'foundry-rs/starknet-foundry' }}
+        run: echo "NODE_URL=$(echo ${{ secrets.NODE_URL }})" >> $GITHUB_ENV
+
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@23bce251a8cd2ffc3c1075eaa2367cf899916d84
