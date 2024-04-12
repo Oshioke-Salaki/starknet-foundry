@@ -53,6 +53,87 @@ A state file is typically named in a following manner:
 {script name}_{network name}_state.json
 ```
 
+## Suggested directory structures
+
+As sncast scripts are just regular scarb packages, there are multiple ways to incorporate scripts into your existing scarb workspace.
+Most common directory structures include:
+
+### having a `scripts` directory with all the scripts in the same workspace with cairo contracts (default for `sncast script init`)
+```shell
+$ tree
+.
+├── scripts
+│   └── my_script
+│       ├── Scarb.toml
+│       └── src
+│           ├── my_script.cairo
+│           └── lib.cairo
+├── src
+│   ├── my_contract.cairo
+│   └── lib.cairo
+└── Scarb.toml
+```
+
+Note that you should add `scripts` to `members` field in your top-level Scarb.toml to be able to run the script from 
+anywhere in the workspace - otherwise you will have to run the script from within its directory. To learn more consult
+[Scarb documentation](https://docs.swmansion.com/scarb/docs/reference/workspaces.html#members).
+
+You can also have multiple scripts as separate packages, or multiple modules inside one package, like so:
+
+#### multiple scripts in one package
+```shell
+$ tree
+.
+├── scripts
+│   └── my_script
+│       ├── Scarb.toml
+│       └── src
+│           ├── my_script1.cairo
+│           ├── my_script2.cairo
+│           └── lib.cairo
+├── src
+│   ├── my_contract.cairo
+│   └── lib.cairo
+└── Scarb.toml
+```
+
+#### multiple scripts as separate packages
+
+```shell
+$ tree
+.
+├── scripts
+│   ├── Scarb.toml
+│   ├── first_script
+│   │   ├── Scarb.toml
+│   │   └── src
+│   │       ├── first_script.cairo
+│   │       └── lib.cairo
+│   └── second_script
+│       ├── Scarb.toml
+│       └── src
+│           ├── second_script.cairo
+│           └── lib.cairo
+├── src
+│   ├── my_contract.cairo
+│   └── lib.cairo
+└── Scarb.toml
+```
+
+### having scripts disjointed from the workspace with cairo contracts
+```shell
+$ tree
+.
+├── Scarb.toml
+└── src
+    ├── lib.cairo
+    └── my_script.cairo
+
+```
+
+In order to use this directory structure you must set any contracts you're using as dependencies in script's Scarb.toml,
+and override `build-external-contracts` property to build those contracts. To learn more consult [Scarb documentation](https://docs.swmansion.com/scarb/docs/extensions/starknet/contract-target.html#compiling-external-contracts).
+
 ## Examples
 
 ### Initialize a script
@@ -107,7 +188,7 @@ version = "0.1.0"
 
 [dependencies]
 starknet = ">=2.3.0"
-sncast_std = { git = "https://github.com/foundry-rs/starknet-foundry.git", tag = "v0.12.0" }
+sncast_std = { git = "https://github.com/foundry-rs/starknet-foundry.git", tag = "v0.21.0" }
 ```
 
 To run the script, do:
@@ -184,7 +265,7 @@ version = "0.1.0"
 
 [dependencies]
 starknet = ">=2.3.0"
-sncast_std = { git = "https://github.com/foundry-rs/starknet-foundry.git", tag = "v0.12.0" }
+sncast_std = { git = "https://github.com/foundry-rs/starknet-foundry.git", tag = "v0.21.0" }
 map = { path = "../contracts" }
 
 [lib]
