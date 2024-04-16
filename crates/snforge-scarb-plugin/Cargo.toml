@@ -8,5 +8,16 @@ publish = false
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
-cairo-lang-macro = { git = "https://github.com/software-mansion/scarb", rev = "cfa36ebfdaff9bd72792b0c2f45ac3449f5780a9" }
-cairo-lang-macro-stable = { git = "https://github.com/software-mansion/scarb", rev = "cfa36ebfdaff9bd72792b0c2f45ac3449f5780a9" }
+cairo-lang-macro = { git = "https://github.com/software-mansion/scarb" }
+cairo-lang-macro-stable = { git = "https://github.com/software-mansion/scarb" }
+
+cairo-lang-parser = { git = "https://github.com/starkware-libs/cairo" }
+cairo-lang-utils = { git = "https://github.com/starkware-libs/cairo" }
+cairo-lang-syntax = { git = "https://github.com/starkware-libs/cairo" }
+cairo-lang-diagnostics = { git = "https://github.com/starkware-libs/cairo" }
+cairo-lang-filesystem = { git = "https://github.com/starkware-libs/cairo" }
+cairo-lang-sierra = { git = "https://github.com/starkware-libs/cairo" }
+
+indoc.workspace = true
+serde_json.workspace = true
+scarb-api = { path = "../scarb-api" }
