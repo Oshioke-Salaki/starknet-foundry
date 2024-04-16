@@ -1,20 +1,20 @@
 use crate::{
+    asserts::{assert_is_empty, assert_is_used_once},
     attributes::{
-        assert_is_empty, assert_is_used_once, available_gas::AvailableGasCollector,
-        fork::ForkCollector, fuzzer::FuzzerCollector, ignore::IgnoreCollector,
-        should_panic::ShouldPanicCollector,
+        available_gas::AvailableGasCollector, fork::ForkCollector, fuzzer::FuzzerCollector,
+        ignore::IgnoreCollector, should_panic::ShouldPanicCollector, AttributeCollector,
+        AttributeDebugInfo,
     },
-    config_fn::{AttributeCollector, ConfigFn},
+    config_fn::ConfigFn,
     parse::parse,
     MacroResult,
 };
-use cairo_lang_macro::{PostProcessContext, TokenStream};
+use cairo_lang_macro::TokenStream;
 use cairo_lang_syntax::node::{ast::FunctionWithBody, db::SyntaxGroup, helpers::QueryAttrs, Token};
 use cairo_lang_utils::Upcast;
 use indoc::formatdoc;
 
-const TEST_ATTR_NAME: &str = "test";
-pub const FULL_PATH_TEST_MARKER: &str = "test_marker";
+pub const TEST_ATTR_NAME: &str = "test";
 
 pub fn _test(args: TokenStream, item: TokenStream) -> MacroResult {
     let code = item.to_string();
@@ -31,22 +31,6 @@ pub fn _test(args: TokenStream, item: TokenStream) -> MacroResult {
     )))
 }
 
-pub fn _collect_tests(_context: PostProcessContext) {
-    // let paths = context
-    //     .full_path_markers
-    //     .into_iter()
-    //     .filter_map(|marker| (marker.key == FULL_PATH_TEST_MARKER).then(|| marker.full_path));
-
-    // let metadata = ScarbCommand::metadata().run().unwrap();
-
-    // let profile = &metadata.current_profile;
-    // let target_name = &metadata.compilation_units[0].target.name;
-
-    // let sierra_file = File::open(format!("./target/{profile}/{target_name}.sierra.json")).unwrap();
-
-    // let sierra: VersionedProgram = serde_json::from_reader(sierra_file).unwrap();
-}
-
 fn config_fn(origin_fn_name: &str) -> String {
     let gas = AvailableGasCollector::get_config_fn_name(origin_fn_name);
     let fork = ForkCollector::get_config_fn_name(origin_fn_name);
@@ -58,19 +42,20 @@ fn config_fn(origin_fn_name: &str) -> String {
         "
         {origin_fn_name}__config__snforge() -> TestConfig {{
             TestConfig {{
-                gas: {gas},
-                fork: {fork},
-                fuzzer: {fuzzer},
-                should_panic: {should_panic},
-                ignore: {ignore},
+                gas: {gas}(),
+                fork: {fork}(),
+                fuzzer: {fuzzer}(),
+                should_panic: {should_panic}(),
+                ignore: {ignore}(),
             }}
         }}
         "
     )
 }
 
+/// if there was no configuration attribute create it's config function that returns `None`
 fn default_config_functions(func: &FunctionWithBody, db: &dyn SyntaxGroup) -> String {
-    fn default_fn<T: AttributeCollector>(
+    fn default_fn<T: AttributeCollector + AttributeDebugInfo>(
         func: &FunctionWithBody,
         db: &dyn SyntaxGroup,
     ) -> Option<String> {

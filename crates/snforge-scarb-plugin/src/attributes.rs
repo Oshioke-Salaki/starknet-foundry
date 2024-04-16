@@ -1,7 +1,6 @@
-use crate::parse::parse_args;
-use cairo_lang_macro::Diagnostic;
-use cairo_lang_syntax::node::ast::OptionArgListParenthesized;
-use cairo_lang_syntax::node::{ast::FunctionWithBody, db::SyntaxGroup, helpers::QueryAttrs};
+use crate::args::Arguments;
+use cairo_lang_macro::Diagnostics;
+use cairo_lang_syntax::node::db::SyntaxGroup;
 
 pub mod available_gas;
 pub mod fork;
@@ -10,27 +9,15 @@ pub mod ignore;
 pub mod should_panic;
 pub mod test;
 
-pub fn assert_is_used_once(
-    db: &dyn SyntaxGroup,
-    func: &FunctionWithBody,
-    attr: &str,
-) -> Result<(), Diagnostic> {
-    if func.attributes(db).query_attr(db, attr).is_empty() {
-        Ok(())
-    } else {
-        Err(Diagnostic::error(format!(
-            "#[{attr}] can only be used once per item"
-        )))
-    }
+pub trait AttributeConsts: Sized {
+    const ATTR_NAME: &'static str;
+    const RETURN_TYPE: &'static str;
 }
 
-pub fn assert_is_empty(attr: &str, args: &str) -> Result<(), Diagnostic> {
-    let (_, args) = parse_args(args)?;
+pub trait AttributeCollector: AttributeConsts {
+    fn args_into_body(db: &dyn SyntaxGroup, args: Arguments<Self>) -> Result<String, Diagnostics>;
+}
 
-    match args {
-        OptionArgListParenthesized::ArgListParenthesized(_) => Err(Diagnostic::warn(format!(
-            "#[{attr}] does not accept any arguments"
-        )))?,
-        OptionArgListParenthesized::Empty(_) => Ok(()),
-    }
+pub trait AttributeDebugInfo: AttributeConsts {
+    const ARGS_FORM: &'static str;
 }

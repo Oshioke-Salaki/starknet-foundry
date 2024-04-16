@@ -1,50 +1,29 @@
+use super::AttributeDebugInfo;
 use crate::{
-    config_fn::{AttributeCollector, ConfigFn},
+    args::Arguments,
+    attributes::{AttributeCollector, AttributeConsts},
+    config_fn::ConfigFn,
     MacroResult,
 };
 use cairo_lang_macro::{Diagnostic, Diagnostics, TokenStream};
-use cairo_lang_syntax::node::{
-    ast::{ArgClause, Expr, OptionArgListParenthesized},
-    db::SyntaxGroup,
-    Terminal,
-};
+use cairo_lang_syntax::node::{ast::Expr, db::SyntaxGroup, Terminal};
 
 pub struct AvailableGasCollector;
 
-impl AttributeCollector for AvailableGasCollector {
+impl AttributeConsts for AvailableGasCollector {
     const ATTR_NAME: &'static str = "available_gas";
     const RETURN_TYPE: &'static str = "AvailableGasConfig";
+}
 
-    fn args_into_body(
-        db: &dyn SyntaxGroup,
-        args: OptionArgListParenthesized,
-    ) -> Result<String, Diagnostics> {
-        let expr =  match args {
-            OptionArgListParenthesized::Empty(_) => {
-                Err(Diagnostic::error(format!(
-                    "#[{}] can not be used without argument. Remove it or specify argument in form: <usize>", AvailableGasCollector::ATTR_NAME
-                )))
-            }
-            OptionArgListParenthesized::ArgListParenthesized(args) => {
-                match args.arguments(db).elements(db).as_slice() {
-                    [] => Err(Diagnostic::error(format!(
-                        "#[{}] can not be used without argument. Remove it or specify argument in form: <usize>", AvailableGasCollector::ATTR_NAME
-                    ))),
-                    [arg] => {
-                        match arg.arg_clause(db) {
-                            ArgClause::Unnamed(value)=>Ok(value.value(db)),
-                            _ => Err(Diagnostic::error(format!(
-                                    "#[{}] should be used with one unnamed argument", AvailableGasCollector::ATTR_NAME
-                            ))),
-                        }
-                    }
-                    _ => Err(Diagnostic::error(format!(
-                        "#[{}] should be used with one unnamed argument", AvailableGasCollector::ATTR_NAME
-                    ))),
-                }
-            }
-        }?;
-        let gas: u64 = match expr {
+impl AttributeDebugInfo for AvailableGasCollector {
+    const ARGS_FORM: &'static str = "<usize>";
+}
+
+impl AttributeCollector for AvailableGasCollector {
+    fn args_into_body(db: &dyn SyntaxGroup, args: Arguments<Self>) -> Result<String, Diagnostics> {
+        let [arg] = args.unnamed_only()?.of_length::<1>()?;
+
+        let gas: u64 = match arg {
             Expr::Literal(literal) => match literal.text(db).parse() {
                 Ok(gas) => gas,
                 Err(_) => Err(Diagnostic::error(format!(

@@ -1,19 +1,20 @@
-use crate::attributes::test::_test;
-use attributes::{
-    available_gas::_available_gas,
-    fork::_fork,
-    fuzzer::_fuzzer,
-    ignore::_ignore,
-    should_panic::_should_panic,
-    test::{_collect_tests, FULL_PATH_TEST_MARKER},
+use crate::{
+    attributes::{
+        available_gas::_available_gas, fork::_fork, fuzzer::_fuzzer, ignore::_ignore,
+        should_panic::_should_panic, test::_test,
+    },
+    post_process::{_post_process, FULL_PATH_TEST_MARKER},
 };
 use cairo_lang_macro::{
     attribute_macro, post_process, Diagnostics, PostProcessContext, ProcMacroResult, TokenStream,
 };
 
+mod args;
+mod asserts;
 mod attributes;
 mod config_fn;
 mod parse;
+mod post_process;
 
 type MacroResult = Result<TokenStream, Diagnostics>;
 
@@ -49,8 +50,8 @@ fn should_panic(args: TokenStream, item: TokenStream) -> ProcMacroResult {
 }
 
 #[post_process]
-fn collect_tests(context: PostProcessContext) {
-    _collect_tests(context)
+fn post_process(context: PostProcessContext) {
+    _post_process(context)
 }
 
 fn as_proc_macro_result(

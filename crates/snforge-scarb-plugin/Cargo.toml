@@ -18,6 +18,8 @@ cairo-lang-diagnostics = { git = "https://github.com/starkware-libs/cairo" }
 cairo-lang-filesystem = { git = "https://github.com/starkware-libs/cairo" }
 cairo-lang-sierra = { git = "https://github.com/starkware-libs/cairo" }
 
+url.workspace = true
 indoc.workspace = true
 serde_json.workspace = true
 scarb-api = { path = "../scarb-api" }
+smol_str = "0.2.1"
