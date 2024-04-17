@@ -21,7 +21,7 @@ pub struct ContractsData {
 struct Contract {
     artifacts: StarknetContractArtifacts,
     class_hash: ClassHash,
-    _sierra_source_path: Utf8PathBuf,
+    source_sierra_path: Utf8PathBuf,
 }
 
 impl ContractsData {
@@ -43,14 +43,14 @@ impl ContractsData {
 
         let contracts = contracts
             .into_iter()
-            .map(|(name, (artifacts, sierra_source_path))| {
+            .map(|(name, (artifacts, source_sierra_path))| {
                 let class_hash = *class_hash_index.get_by_left(&name).unwrap();
                 (
                     name,
                     Contract {
                         artifacts,
                         class_hash,
-                        _sierra_source_path: sierra_source_path,
+                        source_sierra_path,
                     },
                 )
             })
@@ -79,6 +79,13 @@ impl ContractsData {
         self.contracts
             .get(name)
             .map(|contract| &contract.class_hash)
+    }
+
+    #[must_use]
+    pub fn get_source_sierra_path_for_contract(&self, name: &str) -> Option<&Utf8PathBuf> {
+        self.contracts
+            .get(name)
+            .map(|contract| &contract.source_sierra_path)
     }
 
     #[must_use]
